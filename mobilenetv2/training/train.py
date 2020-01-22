@@ -60,9 +60,11 @@ def main():
 
     model = MobileNetV2()
     #Loading of a pre-trained mobilenet
-    model_pretrained = models.mobilenetv2(pretrained = True)
+    model_pretrained = models.mobilenet_v2(pretrained = True)
     dict_params = dict(model.named_parameters())
     dict_params_pretrained = dict(model_pretrained.named_parameters())
+    print('Not pretrained: ', list(dict_params)[:10])
+    print('Pretrained: ', list(dict_params_pretrained)[:10])
     for param in dict_params:
         dict_params[param].data.copy_(dict_params_pretrained[param].data)
 
