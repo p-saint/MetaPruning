@@ -15,7 +15,7 @@ import torch.utils.data.distributed
 
 sys.path.append("../../")
 from utils.utils import *
-from torchvision import datasets, transforms
+from torchvision import datasets, transforms, models
 from torch.autograd import Variable
 from mobilenet_v2 import MobileNetV2, mid_channel_scale, overall_channel_scale
 
@@ -33,7 +33,7 @@ parser.add_argument('-j', '--workers', default=40, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
 args = parser.parse_args()
 
-CLASSES = 1000
+CLASSES = 2
 
 stage_repeat=[1,1,2,3,4,3,3,1]
 
@@ -59,6 +59,17 @@ def main():
     logging.info("args = %s", args)
 
     model = MobileNetV2()
+    #Loading of a pre-trained mobilenet
+    model_pretrained = models.mobilenetv2(pretrained = True)
+    dict_params = dict(model.named_parameters())
+    dict_params_pretrained = dict(model_pretrained.named_parameters())
+    for param in dict_params:
+        dict_params[param].data.copy_(dict_params_pretrained[param].data)
+
+    num_ftrs = model.classifier[1].in_features
+    # Here the size of each output sample is set to 2.
+    # Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
+    mobilenet.classifier[1] = nn.Linear(num_ftrs, 2)
     logging.info(model)
     model = nn.DataParallel(model).cuda()
 
